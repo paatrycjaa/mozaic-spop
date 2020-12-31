@@ -1,6 +1,6 @@
 import Data.List (transpose)
 import Data.List (intercalate)
-
+-- te biblioteki są teoretycznie niedozwolone chyba
 
 showMat = unTable " " . equalizeCellLengths . (map . map) show
 
@@ -11,26 +11,26 @@ main = putStrLn $ showMat [[1,23,456],[78,-90,123],[4567,8,9]]
 -- | Un-tabs, and intersperses the result with \\n. This converts a 2-dimensional
 --   list of strings into a string where ends of a line are \\n, and the
 --   individual cells are divided by \\t.
-unTable :: String     -- ^ Column spacer
-        -> [[String]] -- ^ Table
+unTable :: String     -- ^ dzieli kolumny
+        -> [[String]] -- ^ tablica
         -> String
 unTable colSpacer = intercalate "\n" . map (intercalate colSpacer)
 
 
 
--- | Finds the length of the longest line of a table
+-- | znajdujemy długość najdłuższej linijki tablicy
 maxLineLength :: [[a]] -> Int
 maxLineLength = maximum . map length
 
 
 
--- | Calculates the length of the longest entry of each column.
+-- | obliczamy długość najdłuższego wejścia każdej kolumny
 maxCellLengthsPerColumn :: [[[a]]] -> [Int]
 maxCellLengthsPerColumn = map maxLineLength . transpose
 
 
 
--- | Reformats the table.
+-- | reformatuje tablicę
 equalizeCellLengths :: [[String]] -> [[String]]
 equalizeCellLengths table = map (equalize maxLengths) table
 	where
@@ -53,5 +53,5 @@ padToLengthLeft :: a   -- ^ Padding element
 padToLengthLeft padding list n = (replicate (n - length list) padding) ++ list
 
 
--- ALIGN COLUMNS LEFT:
+-- Wyrównanie kolumn do lewej:
 -- padToLengthRight padding list n = take n (list ++ repeat padding)

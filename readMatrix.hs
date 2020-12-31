@@ -94,6 +94,10 @@ listOfHorizontalBorders m = [(iy,ix) | iy <-[0, numRows m - 1], ix <- [1..(numCo
 listOfVerticalBorders :: Matrix -> [Pos]
 listOfVerticalBorders m = [(iy,ix) | ix <-[0, numColumns m - 1], iy <- [1..(numRows m - 2)], ifExist (iy,ix) m]
 
+--wygenerowanie listy elementów poza brzegami (9, ale i 8,7 nie mogą być na brzegu)
+listOfInsideElements :: Matrix -> [Pos]
+listOfInsideElements m = [(iy,ix) | ix <-[1..(numRows m - 2)], iy <- [1..(numRows m - 2)], ifExist (iy,ix) m]
+
 --wygenerowanie listy dziewięciu pozycji do odwiedzenia wokol podanej pozycji
 generateFillsPos :: Matrix -> Pos -> [Pos]
 generateFillsPos m (i,j) = [( i + a, j + b) | a <- [-1,0,1], b <- [-1,0,1], ifExist (i + a,j +b) m]
