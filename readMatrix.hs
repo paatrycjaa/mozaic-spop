@@ -151,3 +151,43 @@ fillObviousPos m solv (x:xs) =    if ifFilled x solv == True
                                     else if numberNotOfFilledPos solv x == (numberOfAllPos m x) - (elemMatrix m x)
                                         then fillObviousPos m (fillAroundNotFilled solv x 1) xs
                                         else fillObviousPos m solv xs
+
+
+--    Assuming you only want to apply function f to elements for which function p returns true, you can do this:
+--    map (\x -> if p x then f x else x) xs
+
+
+-- znajdz na liscie elementy o określonej wartości, zwróć ich listę
+findElementswithval :: Matrix -> [Pos] -> Int -> [Pos]
+findElementswithval m list val = filter (\x -> elemMatrix m x==val) list 
+
+-- wypelnij wszystkie pozycje wokół zer jedynkami 
+fillZeros :: Matrix -> Matrix -> Matrix 
+fillZeros m solv = fillAroundWhenVal m solv (listOfAllPositions m) 0 0  
+
+
+--znajdz pary dwójek w rogach - przypadek oczywisty
+
+--findTwopairs :: Matrix -> [Pos]
+--findTwopairs m = map (\x -> generateFillsPos m x) (findElementswithval m listOfCorners 2)
+
+--lista dwójek: findElementswithval m listOfCorners 2  
+
+
+pairsOfTwo :: Matrix ->Matrix -> Pos -> Matrix
+pairsOfTwo m solv pos = 
+    if (elemMatrix m pos ==2) && (length(filter (==2) [( fst pos + a, fst pos + b) | a <- [-1,0,1], b <- [-1,0,1], ifExist (fst pos + a,fst pos +b) m])==2)
+    then fillAroundWhenVal  m solv [pos] 2 2
+    else solv    
+
+
+translateMatrixElements :: Matrix -> Pos -> Char 
+translateMatrixElements m pos = if elemMatrix m pos == 0 then '_'
+    else 'X'
+
+
+translateMatrix :: Matrix -> [Char]
+translateMatrix m = map (\x -> translateMatrixElements m x) (listOfAllPositions m)
+
+
+
