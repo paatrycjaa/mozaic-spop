@@ -226,9 +226,6 @@ solve m solv = solveBacktracking (0,0) m solv
         solveBacktracking (iy,ix) m solv 
             | not (checkIfMatrixLegal m solv (listOfAllPositions solv) ) = Nothing    --czy macierz poprawna
             | checkIfCompleted solv (listOfAllPositions solv) = Just solv
-            | ifFilled (iy,ix) solv = if ix + 1 >= length solv 
-                                        then solveBacktracking (iy + 1, 0) m solv 
-                                        else solveBacktracking (iy, ix + 1) m solv
             | otherwise = let 
                             (iy', ix') = if ix + 1 >= length solv then (iy + 1, 0) else (iy, ix + 1)
                             fill = updateElemMatrix (iy,ix) (const 1) solv
@@ -236,6 +233,7 @@ solve m solv = solveBacktracking (0,0) m solv
                         in case solveBacktracking (iy', ix') m fill of
                             Just s -> Just s
                             Nothing -> solveBacktracking (iy', ix') m notFill
+
 
                 
                     
