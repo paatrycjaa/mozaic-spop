@@ -97,16 +97,30 @@ checkIfLegal board (ix,iy) = let value = snd (getSquare board (ix,iy) )
                 addCounts (i,j,k) (l,m,n) = (i+l, j+m, k+n)
 
 -- sprawdzenie czy cała plansza dobrze wypełniona
-checkIfBoardLegal :: Board -> Bool
-checkIfBoardLegal board = and [checkIfLegal board x | x <- listOfAllPositions board]
+-- szybsza wersja?
+checkIfBoardLegal :: Board -> [Pos]-> Bool
+checkIfBoardLegal _ [] = True
+checkIfBoardLegal  board (x:xs)  
+    | checkIfLegal board x = checkIfBoardLegal  board xs
+    | otherwise = False
+
+-- checkIfBoardLegal :: Board -> Bool
+-- checkIfBoardLegal board = and [checkIfLegal board x | x <- listOfAllPositions board]
 
 -- sprawdzenie czy zagadka rozwiązana
-checkIfBoardCompleted :: Board -> Bool 
-checkIfBoardCompleted board = all ( all checkIfCompleted ) board
-    where
-        checkIfCompleted :: Square -> Bool
-        checkIfCompleted (UNSOLVED, _ ) = False 
-        checkIfCompleted _ = True 
+-- szybsza wersja?
+checkIfBoardCompleted :: Board -> [Pos] -> Bool
+checkIfBoardCompleted _ [] = True
+checkIfBoardCompleted board (x:xs)
+    | fst (getSquare board x ) /= UNSOLVED = checkIfBoardCompleted board xs
+    | otherwise = False
+
+--checkIfBoardCompleted :: Board -> Bool 
+--checkIfBoardCompleted board = all ( all checkIfCompleted ) board
+--    where
+--        checkIfCompleted :: Square -> Bool
+--        checkIfCompleted (UNSOLVED, _ ) = False 
+--        checkIfCompleted _ = True 
 
 -- rozwiazanie bactracking
 solve :: Board -> Maybe Board
@@ -114,8 +128,8 @@ solve solv = solveBacktracking (0,0) solv
     where 
         solveBacktracking :: Pos -> Board -> Maybe Board
         solveBacktracking (ix,iy) solv 
-            | not (checkIfBoardLegal solv) = Nothing    --czy macierz poprawna
-            | checkIfBoardCompleted solv = Just solv
+            | not (checkIfBoardLegal solv (listOfAllPositions solv)) = Nothing    --czy macierz poprawna
+            | checkIfBoardCompleted solv (listOfAllPositions solv) = Just solv
             | otherwise = let 
                             (ix', iy') = if ix + 1 >= length solv then (0,iy + 1) else (ix + 1,iy)
                             fill = updateSquareState solv (ix,iy) FILLED 
