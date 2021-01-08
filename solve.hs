@@ -124,16 +124,17 @@ checkIfBoardCompleted board (x:xs)
 
 -- rozwiazanie bactracking
 solve :: Board -> Maybe Board
-solve solv = solveBacktracking (0,0) solv
+solve solv = let allPos = listOfAllPositions solv
+    in solveBacktracking (0,0) solv allPos
     where 
-        solveBacktracking :: Pos -> Board -> Maybe Board
-        solveBacktracking (ix,iy) solv 
-            | not (checkIfBoardLegal solv (listOfAllPositions solv)) = Nothing    --czy macierz poprawna
-            | checkIfBoardCompleted solv (listOfAllPositions solv) = Just solv
+        solveBacktracking :: Pos -> Board -> [Pos] -> Maybe Board
+        solveBacktracking (ix,iy) solv allPos
+            | not (checkIfBoardLegal solv allPos) = Nothing    --czy macierz poprawna
+            | checkIfBoardCompleted solv allPos = Just solv
             | otherwise = let 
                             (ix', iy') = if ix + 1 >= length solv then (0,iy + 1) else (ix + 1,iy)
                             fill = updateSquareState solv (ix,iy) FILLED 
                             notFill = updateSquareState solv (ix,iy) NOTFILLED 
-                        in case solveBacktracking (ix', iy') fill of
+                        in case solveBacktracking (ix', iy') fill allPos of
                             Just s -> Just s
-                            Nothing -> solveBacktracking (ix', iy') notFill
+                            Nothing -> solveBacktracking (ix', iy') notFill allPos
