@@ -3,11 +3,31 @@ import Prelude
 import System.IO (readFile)
 
 
+
+
+
+main = do
+    putStrLn "Podaj nazwę pliku z planszą:"  
+    name <- getLine      
+    puzzle <- readPuzzle name
+    putStrLn (show $ puzzle)
+
+    
+    --mozaic <- toIntMatrix (removePuncMatrix puzzle) --
+    --solution <- createMatrix (numColumns mozaic) (numRows mozaic) 2 -- 
+    --filled_solution <- fillAroundWhenVal mozaic solution (listOfCorners mozaic) 4 1 --
+    --filled_2 <- fillZeros mozaic solution --
+    --obvious <- fillObviousPos mozaic filled_2 (listOfAllPositions filled_2)
+
+
+
+
 a::IO (Char, Char)
 a = do  x<-getChar 
         getChar
         y<-getChar
         return (x, y)
+
 
 readPuzzle :: String -> IO [String]
 readPuzzle filename = do
@@ -15,19 +35,12 @@ readPuzzle filename = do
     let puzzle = read contents :: [String]
     return puzzle
 
-main = do   puzzle <- readPuzzle "puzzle.txt"
-            putStrLn (show $ puzzle)
---            mozaic = toIntMatrix (removePuncMatrix puzzle)
---            solution = createMatrix (numColumns mozaic) (numRows mozaic) 2
---            filled_solution = fillAroundWhenVal mozaic solution (listOfCorners mozaic) 4 1
---            filled_2 = fillZeros mozaic solution
---            obvious = fillObviousPos mozaic filled_2 (listOfAllPositions filled_2)
-
 
 
 -- implementacja macierzy
 type Matrix = [[Int]]
 type Pos = (Int,Int) -- iy/ix
+
 
 -- liczba wierszy macierzy
 numRows :: Matrix -> Int
@@ -40,6 +53,14 @@ numColumns = length . head
 --stworzenie macierzy o podanej wielkosci wypełnionej wartością c , b - liczba wierszy, a - liczba kolumn
 createMatrix :: Int-> Int -> a -> [[a]]
 createMatrix a b c = replicate b (replicate a c)
+
+
+--matrix for storing solution
+solutionMatrix::[String]->Matrix
+solutionMatrix puzzle=createMatrix (numColumns mozaic) (numRows mozaic) 2 
+    where mozaic =  toIntMatrix (removePuncMatrix puzzle)
+
+
 
 --wydrukowanie wartosci macierzy m na pozycji (a, b) !! - indeksowanie maierzy
 elemMatrix :: Matrix -> Pos -> Int
@@ -169,9 +190,12 @@ fillObviousPos m solv (x : xs)
 findElementswithval :: Matrix -> [Pos] -> Int -> [Pos]
 findElementswithval m list val = filter (\x -> elemMatrix m x==val) list 
 
--- wypelnij wszystkie pozycje wokół zer jedynkami 
+-- wypelnij wszystkie pozycje wokół zer zerami 
 fillZeros :: Matrix -> Matrix -> Matrix 
 fillZeros m solv = fillAroundWhenVal m solv (listOfAllPositions m) 0 0  
+
+
+
 
 
 --znajdz pary dwójek w rogach - przypadek oczywisty
@@ -189,13 +213,25 @@ fillZeros m solv = fillAroundWhenVal m solv (listOfAllPositions m) 0 0
   --  else solv    
 
 
-translateMatrixElements :: Matrix -> Pos -> Char 
-translateMatrixElements m pos = if elemMatrix m pos == 0 then '_'
-    else 'X'
+-- translateMatrixElements :: Matrix -> Pos -> Char 
+-- translateMatrixElements m pos = if elemMatrix m pos == 0 then '_'
+--     else 'X'
 
 
-translateMatrix :: Matrix -> [Char]
-translateMatrix m = map (\x -> translateMatrixElements m x) (listOfAllPositions m)
+-- translateMatrix :: Matrix -> [Char]
+-- translateMatrix m = map (\x -> translateMatrixElements m x) (listOfAllPositions m)
+
+--
+easyCasesElimination:: Matrix->Matrix->Matrix
+easyCasesElimination m solv =
+    fillZeros m solv1
+    where solv1=fillAroundWhenVal m solv2 (listOfCorners m) 4 1
+          solv2 =fillAroundWhenVal m solv3 (listOfVerticalBorders m) 6 1
+          solv3= fillAroundWhenVal m solv (listOfAllPositions m) 9 1
+          
+
+
+
 
 --sprawdzenie czy cała macierz poprawnie wypelniona
 checkIfMatrixLegal :: Matrix -> Matrix -> [Pos] -> Bool 
@@ -236,5 +272,16 @@ solve m solv = solveBacktracking (0,0) m solv
 
 
                 
-                    
 
+
+--printing results                 
+valueOf :: Int -> Char
+valueOf 0 = '_'
+valueOf 1 = 'X'
+valueOf _ = 'B'
+
+listValues :: [[Int]] -> [String]
+listValues = map (map valueOf)
+
+printValues :: [[Int]] -> IO ()
+printValues = putStrLn . unlines . listValues
