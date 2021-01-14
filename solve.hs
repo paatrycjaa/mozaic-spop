@@ -1,6 +1,17 @@
 import System.IO (readFile)
 import Prelude
 
+
+main = do
+    putStrLn "Podaj nazwę pliku z planszą:"  
+    name <- getLine      
+    puzzle <- readPuzzle name
+    putStrLn (show $ length $ puzzle) -- wyświetl liczbę wierszy łamigłówki
+    print puzzle --wyswietla łamigłówkę
+    printSolution (transformSolutionForPrinting puzzle)  --wyświetl rozwiązaną łamigłówkę
+
+
+
 -- przygotowanie typów danych
 type Pos = (Int,Int)
 data State = UNSOLVED | FILLED | NOTFILLED deriving (Eq, Show)
@@ -37,6 +48,7 @@ numColumns = length . head
 getSquare :: Board -> Pos -> Square
 getSquare board (a, b) = board !! b !! a
 
+
 -- zmienienie wartosci planszy, ix - kolumna, iy - wiersz
 -- wywolanie updateSquare (1,1) (\x -> 4) macierz
 updateSquare :: Pos -> (a->a) -> [[a]] -> [[a]]
@@ -52,6 +64,7 @@ updateSquare (ix, iy) m = updateAt iy (\row -> updateAt ix m row)
         updateHead _ [] = []
         updateHead m (x:xs) = m x : xs
 
+--zmienienie wartości na pozycji
 updateSquareState :: Board -> Pos -> State -> Board
 updateSquareState board (ix,iy) s = updateSquare (ix,iy) (const (s, snd (getSquare board (ix,iy)))) board
 
@@ -97,30 +110,18 @@ checkIfLegal board (ix,iy) = let value = snd (getSquare board (ix,iy) )
                 addCounts (i,j,k) (l,m,n) = (i+l, j+m, k+n)
 
 -- sprawdzenie czy cała plansza dobrze wypełniona
--- szybsza wersja?
 checkIfBoardLegal :: Board -> [Pos]-> Bool
 checkIfBoardLegal _ [] = True
 checkIfBoardLegal  board (x:xs)  
     | checkIfLegal board x = checkIfBoardLegal  board xs
     | otherwise = False
 
--- checkIfBoardLegal :: Board -> Bool
--- checkIfBoardLegal board = and [checkIfLegal board x | x <- listOfAllPositions board]
-
 -- sprawdzenie czy zagadka rozwiązana
--- szybsza wersja?
 checkIfBoardCompleted :: Board -> [Pos] -> Bool
 checkIfBoardCompleted _ [] = True
 checkIfBoardCompleted board (x:xs)
     | fst (getSquare board x ) /= UNSOLVED = checkIfBoardCompleted board xs
     | otherwise = False
-
---checkIfBoardCompleted :: Board -> Bool 
---checkIfBoardCompleted board = all ( all checkIfCompleted ) board
---    where
---        checkIfCompleted :: Square -> Bool
---        checkIfCompleted (UNSOLVED, _ ) = False 
---        checkIfCompleted _ = True 
 
 -- rozwiazanie bactracking
 solve :: Board -> Maybe Board
@@ -138,3 +139,30 @@ solve solv = let allPos = listOfAllPositions solv
                         in case solveBacktracking (ix', iy') fill allPos of
                             Just s -> Just s
                             Nothing -> solveBacktracking (ix', iy') notFill allPos
+
+
+
+--printing results                 
+valueOf :: State -> Char
+valueOf NOTFILLED = '_'
+valueOf FILLED = 'X'
+valueOf _ = 'B'
+
+listValues :: [[State]] -> [String]
+listValues = map (map valueOf)
+
+printSolution :: [[State]] -> IO ()
+printSolution = putStrLn . unlines . listValues
+
+shellStates :: Board ->[[State]]
+shellStates  =  map (fst . unzip) 
+
+
+fromJustBoard :: Maybe Board -> Board
+fromJustBoard (Just a) = a
+
+transformSolutionForPrinting :: [String] -> [[State]]
+transformSolutionForPrinting puzzle=shellStates(fromJustBoard(solve (loadBoard puzzle)))
+    
+
+

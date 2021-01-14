@@ -4,13 +4,12 @@ import System.IO (readFile)
 
 
 
-
-
 main = do
     putStrLn "Podaj nazwę pliku z planszą:"  
     name <- getLine      
     puzzle <- readPuzzle name
     putStrLn (show $ puzzle)
+    -- putStrLn (show $ solve solv)
 
     
     --mozaic <- toIntMatrix (removePuncMatrix puzzle) --
@@ -285,3 +284,14 @@ listValues = map (map valueOf)
 
 printValues :: [[Int]] -> IO ()
 printValues = putStrLn . unlines . listValues
+
+
+
+
+--printing results                 
+valueOf :: Int -> Char
+valueOf 0 = '_'
+valueOf 1 = 'X'
+valueOf _ = 'B'
+
+
