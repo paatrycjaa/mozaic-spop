@@ -2,6 +2,7 @@ import System.IO (readFile)
 import Prelude
 
 
+-- glowna czesc programu
 main = do
     putStrLn "Podaj nazwę pliku z planszą:"  
     name <- getLine      
@@ -80,17 +81,6 @@ listOfAllPositions board = [(ix,iy) | ix <-[0..(numColumns board - 1)], iy <- [0
 fromJust :: Maybe Int -> Int
 fromJust (Just a) = a
 
-countPos :: [Pos] -> Board -> (Int,Int,Int)
-countPos [] _ = (0,0,0)
-countPos (x:xs) board = let state = fst (getSquare board x )
-    in if state == UNSOLVED then addCounts (1,0,0) (countPos xs board)
-        else if state == FILLED then addCounts (1,1,0) (countPos xs board)
-            else addCounts (1,0,1) (countPos xs board)
-
-addCounts :: (Int, Int, Int) -> (Int,Int,Int) -> (Int,Int,Int)
-addCounts (i,j,k) (l,m,n) = (i+l, j+m, k+n)
-
-
 --sprawdzenie czy pozycje wokół podanej pozycji poprawnie wypełnione
 checkIfLegal :: Board -> Pos -> Bool 
 checkIfLegal board (ix,iy) = let value = snd (getSquare board (ix,iy) )
@@ -99,6 +89,7 @@ checkIfLegal board (ix,iy) = let value = snd (getSquare board (ix,iy) )
         (allPos, fillPos, unfillPos) = countPos (generateNeighbours board (ix, iy) ) board 
         in fillPos <= fromJust value && unfillPos <= allPos - fromJust value) 
             where 
+                -- obliczenie ile jest wszystkich, wypełnionych i niewypełnionych pól
                 countPos :: [Pos] -> Board -> (Int,Int,Int)
                 countPos [] _ = (0,0,0)
                 countPos (x:xs) board = let state = fst (getSquare board x )
@@ -106,6 +97,7 @@ checkIfLegal board (ix,iy) = let value = snd (getSquare board (ix,iy) )
                         else if state == FILLED then addCounts (1,1,0) (countPos xs board)
                             else addCounts (1,0,1) (countPos xs board)
 
+                -- dodanie trójek
                 addCounts :: (Int, Int, Int) -> (Int,Int,Int) -> (Int,Int,Int)
                 addCounts (i,j,k) (l,m,n) = (i+l, j+m, k+n)
 
@@ -131,7 +123,7 @@ solve solv = let allPos = listOfAllPositions solv
         solveBacktracking :: Pos -> Board -> [Pos] -> Maybe Board
         solveBacktracking (ix,iy) solv allPos
             | not (checkIfBoardLegal solv allPos) = Nothing    --czy macierz poprawna
-            | checkIfBoardCompleted solv allPos = Just solv
+            | checkIfBoardCompleted solv allPos = Just solv    --czy znalezione rozwiązanie
             | otherwise = let 
                             (ix', iy') = if ix + 1 >= length solv then (0,iy + 1) else (ix + 1,iy)
                             fill = updateSquareState solv (ix,iy) FILLED 
@@ -142,7 +134,7 @@ solve solv = let allPos = listOfAllPositions solv
 
 
 
---printing results                 
+-- drukowanie rozwiązania                 
 valueOf :: State -> Char
 valueOf NOTFILLED = '_'
 valueOf FILLED = 'X'
@@ -157,10 +149,11 @@ printSolution = putStrLn . unlines . listValues
 shellStates :: Board ->[[State]]
 shellStates  =  map (fst . unzip) 
 
-
+-- wyłuskanie wartości Board
 fromJustBoard :: Maybe Board -> Board
 fromJustBoard (Just a) = a
 
+-- funkcja wywolujaca algorytm rozwiazujacy zagadke i drukujaca rozwiazanie
 transformSolutionForPrinting :: [String] -> [[State]]
 transformSolutionForPrinting puzzle=shellStates(fromJustBoard(solve (loadBoard puzzle)))
     
